@@ -1,0 +1,98 @@
+---
+title: 'Pakcage: Benford.Analysis'
+author: "David Jackson"
+date: "11/15/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(benford.analysis)
+```
+
+### Author: Carlos Cinelli <carloscinelli@hotmail.com>
+#### Generates benford object
+
+```{r}
+data(corporate.payment) #gets data
+cp <- benford(corporate.payment$Amount, 2, sign="both") 
+cp #prints 
+plot(cp) #plots
+```
+
+#### Prints the digits by decreasing order of discrepancies
+
+```{r}
+head(suspectsTable(cp),10) 
+```
+
+#### Gets observations of the 2 most suspicious groups
+
+```{r}
+suspects <- getSuspects(cp, corporate.payment, how.many=2) 
+```
+
+#### Prints the duplicates by decreasing order
+
+```{r}
+head(duplicatesTable(cp))
+```
+
+#### Gets the observations of the 2 values with most duplicates
+
+```{r}
+duplicates <- getDuplicates(cp, corporate.payment,how.many=2)
+head(duplicates)
+```
+
+#### Gets the Mean Absolute Deviation
+
+```{r}
+MAD(cp)
+```
+
+
+#### Gets the Chi-squared test
+
+
+```{r}
+chisq(cp)
+```
+
+#### Gets observations starting with 50 or 99 
+
+```{r}
+digits_50_and_99 <- getDigits(cp, corporate.payment, digits=c(50, 99))
+head(digits_50_and_99)
+```
+```{r}
+data(taxable.incomes.1978)
+FirstDigit <- substr(taxable.incomes.1978$taxIncomes,1,1)
+FD <- as.data.frame(FirstDigit)
+CountIncome <- FD %>% group_by(FirstDigit) %>%
+  summarize (count=n())
+```
+```{r}
+ggplot(CountIncome) + geom_col(aes(x=FirstDigit,y=count))
+```
+#### First Two Digits
+
+```{r}
+secondDigit <- substr(taxable.incomes.1978$taxIncomes,1,2)
+FD1 <- as.data.frame(secondDigit)
+```
+
+```{r}
+secondIncome <- FD1 %>% group_by(secondDigit) %>%
+  summarize (count=n())
+```
+```{r}
+ggplot(secondIncome) + geom_col(aes(x=secondDigit,y=count))
+```
+
+
+
+
