@@ -1,7 +1,4 @@
-## Title: Benford's Law, Part 3 (Analysis in R, no packages), updated code June 2020
-## YouTube: https://youtu.be/F9XjUx47xVY
-## Author: Mark 
-##
+
 options(scipen=999)   #   disable scientific notation 
 
 #---- input area ------------------------
@@ -77,7 +74,7 @@ if(MAD>0.0022){
 }
 #
 cat('Our conclusion is:',con,"\n")
-write.csv(BenTest, file="BenTest.csv")    # Write the results to a csv file
+write.csv(BenTest, file=outFile)    # Write the results to a csv file
 
 
 

@@ -3,6 +3,7 @@ library(ggplot2)
 library(scales)
 library(dplyr)
 library(BenfordTests)
+library(RSQLite)
 ##
 rm(list=ls())
 set.seed(421)
@@ -18,3 +19,12 @@ ggplot(first_count) + geom_col(aes(x=first,y=Freq)) +
 ggplot(first_count) + geom_col(aes(x=first,y=per)) +
   scale_y_continuous(label=percent) +
   labs(title="Benford's Law 1000 numbers")
+##
+### COVID-19 Data New York Times
+##
+db <- db <- dbConnect(RSQLite::SQLite(),dbname= "../COVIDDB/COVID.sqlite3")
+df <- dbGetQuery(db,"select * from COUNTYDAILY")
+df$Reported <- as.Date(df$Reported)
+df$First <- substr(df$new_deaths,1,1)
+plot(table(df$First))
+

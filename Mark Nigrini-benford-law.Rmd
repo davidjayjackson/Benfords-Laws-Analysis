@@ -1,23 +1,33 @@
-## Title: Benford's Law, Part 3 (Analysis in R, no packages), updated code June 2020
-## YouTube: https://youtu.be/F9XjUx47xVY
-## Author: Mark 
-##
-options(scipen=999)   #   disable scientific notation 
+---
+title: "Dr.  Mark Nigrini;  Benford's Law"
+author: "David Jackson"
+date: "11/20/2020"
+output: html_document
+---
 
-#---- input area ------------------------
-setwd("C:/R/Data")    # change to the directory containing your input csv file
-#inFile<-"1_CensusData_2010a.csv"  
-inFile<-'http://datayyy.com/data_csv/1_CensusData_2010a.csv'  # altervative infile 
-outFile<-"BenfordFirstTwo_R.csv"
+```{r setup, include=FALSE,error=FALSE,message=FALSE,warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999) 
+```
 
-#People <- read.csv(file="1_CensusData_2010a.csv", header=TRUE)
-People <- read.csv(inFile, header=TRUE)
+### Benford's Law, Part 3 (Analysis in R, no packages), updated code June 2020
+* YouTube: https://youtu.be/F9XjUx47xVY
+
+#### Read in Census Data
+
+```{r}
+rm(list=ls())
+People <- read.csv("./1_CensusData_2010a.csv")
 class(People$People2010)
 class(People$Area)
 People$People2010 <- as.numeric(People$People2010)
-View(People)
+head(People,n=10)
 colnames(People)
+```
 
+#### People Counts: Min,Max and Mean
+
+```{r}
 TotPeople <- format(sum(People$People2010), nsmall=2, big.mark=",")
 MinPeople <- format(min(People$People2010), nsmall=2, big.mark=",")
 MaxPeople <- format(as.numeric(max(People$People2010)),nsmall=2,scientific=FALSE,big.mark=",")
@@ -26,27 +36,44 @@ str(People)
 summary(People$People2010)
 People<-People[!(People$People2010<0.01),] # Delete records < 0.01
 
-# Multiply records 0.01<=x<10 by 1000 to move decimal point to the right
+```
+
+#### Multiply records 0.01<=x<10 by 1000 to move decimal point to the right
+
+```{r}
 People$People2010 <- ifelse(People$People2010 <10 & People$People2010 >=0.01,
    People$People2010*1000,People$People2010)
+```
 
-# Extract and Sum the Digit Frequencies
+#### Extract and Sum the Digit Frequencies
+
+```{r}
 FT       <- substr(People$People2010,1,2)
 FTD      <- as.numeric(FT)
 Count    <- aggregate(data.frame(Count=FTD),list(FirstTwo=FTD),length)
 FTDCount <- data.frame(Count$FirstTwo, Count$Count)
 
-# Rename the FirstTwo and Count fields
+```
+
+####  Rename the FirstTwo and Count fields
+
+```{r}
 colnames(FTDCount)[colnames(FTDCount)=="Count.FirstTwo"]<-"FirstTwo"
 colnames(FTDCount)[colnames(FTDCount)=="Count.Count"]<-"Count"
+```
 
-# Check: Is there a positive (>0) count for each possible First-Two Digits?
+#### Check: Is there a positive (>0) count for each possible First-Two Digits?
+
+```{r}
 CheckErr1 <- NROW(FTDCount)
 CheckErr2 <- sum(FTDCount$FirstTwo)
 if(CheckErr1!= 90)   warning('Count of First-Two Digits ne 90')
 if(CheckErr2!= 4905) warning('First-Two Digits not = 10:99')
+```
 
-# Prepare the components of the Benford Table
+#### Prepare the components of the Benford Table
+
+```{r}
 FTDigit    <- c(10:99)
 Count      <- c(FTDCount$Count)
 TotObs     <- sum(Count)
@@ -56,15 +83,22 @@ Difference <- round(Actual-Benford, digits=6)
 AbsDiff    <- round(abs(Difference), digits=6)
 Zstat      <- round((abs(Actual-Benford)-(1/(2*TotObs)))/(sqrt(Benford*(1-Benford)/TotObs)), digits=6)
 Zstat      <- ifelse(Zstat<0, 0, Zstat)
+```
 
-# Combine the components of the Benford Table with reasonableness tests
+#### Combine the components of the Benford Table with reasonableness tests
+
+```{r}
 BenTest <- cbind(FTDigit,Count,Actual,Benford,Difference,AbsDiff,Zstat)
 head(BenTest, n=5)
 tail(BenTest, n=5)
 str(BenTest)
 summary(Count)
 
-# Calculate the Mean Absolute Deviation (MAD) to assess conformity
+```
+
+####  Calculate the Mean Absolute Deviation (MAD) to assess conformity
+
+```{r}
 MAD <- round(mean(AbsDiff), digits = 5)
 if(MAD>0.0022){
      con<-"Nonconformity"
@@ -78,6 +112,16 @@ if(MAD>0.0022){
 #
 cat('Our conclusion is:',con,"\n")
 write.csv(BenTest, file="BenTest.csv")    # Write the results to a csv file
+```
 
+#### Plots of Benford's Law
+
+```{r}
+benford <- as.data.frame(BenTest)
+attach(benford)
+plot(benford$FTDigit,benford$Count,type="h",main="Benford Counts First Two Digits")
+plot(benford$Actual,type="h",main="Benford Actual   Percents")
+lines(benford$Benford,type="l",col="red",)
+```
 
 

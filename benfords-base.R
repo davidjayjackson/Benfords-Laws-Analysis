@@ -5,7 +5,8 @@ library(dplyr)
 library(BenfordTests)
 ##
 rm(list=ls())
-set.seed(421)as.data.frame(table(first))
+set.seed(421)
+as.data.frame(table(first))
 X<-rbenf(n=302)
 head(X)
 ##
