@@ -81,7 +81,7 @@ ggplot(CountIncome) + geom_col(aes(x=FirstDigit,y=count))
 #### First Two Digits
 
 ```{r}
-secondDigit <- substr(taxable.incomes.1978$taxIncomes,1,2)
+secondDigit <- substr(taxable.incomes.1978$taxIncomes,1,)
 FD1 <- as.data.frame(secondDigit)
 ```
 

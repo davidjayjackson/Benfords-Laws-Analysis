@@ -83,7 +83,7 @@ signifd.analysis(ZZ)
 #### New York COVID-19 Deaths 
 
 ```{r}
-nyt <- read_csv("../DATA/us-states.csv") %>% filter(state =="New York")
+nyt <- read_csv("../DATA/us-states.csv") %>% filter(state =="New York") %>% select(deaths)
 
  NYTD<- diff(nyt$deaths,lag=1)
 
