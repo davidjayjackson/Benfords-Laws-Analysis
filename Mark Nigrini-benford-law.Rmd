@@ -2,11 +2,16 @@
 title: "Dr.  Mark Nigrini;  Benford's Law"
 author: "David Jackson"
 date: "11/20/2020"
-output: html_document
+output: 
+  html_document: 
+    fig_width: 9
+    fig_height: 7
 ---
 
 ```{r setup, include=FALSE,error=FALSE,message=FALSE,warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(benford.analysis)
+library(BenfordTests)
 options(scipen=999) 
 ```
 
@@ -123,5 +128,29 @@ plot(benford$FTDigit,benford$Count,type="h",main="Benford Counts First Two Digit
 plot(benford$Actual,type="h",main="Benford Actual   Percents")
 lines(benford$Benford,type="l",col="red",)
 ```
+
+### R Package: Benford Analysis
+
+```{r}
+
+set.seed(421)
+cp <- benford(People$new_deaths, 2, sign="both") 
+cp #prints 
+plot(cp) #plots
+
+cp1 <- benford(People$new_deaths, 1, sign="both") 
+cp #prints 
+plot(cp1) #plots
+```
+
+### R Package BenfordTests
+
+```{r}
+
+set.seed(421)
+X <-signifd(People$new_deaths)
+signifd.analysis(X)
+```
+
 
 

@@ -1,0 +1,193 @@
+---
+title: "Dr.  Mark Nigrini;  Benford's Law"
+author: "David Jackson"
+date: "11/20/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE,error=FALSE,message=FALSE,warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999) 
+library(ggplot2)
+library(scales)
+library(dplyr)
+theme_set(theme_linedraw() + theme(panel.grid = element_line(linetype = 'dashed')))
+```
+
+### Benford's Law, Part 3 (Analysis in R, no packages), updated code June 2020
+* YouTube: https://youtu.be/F9XjUx47xVY
+
+#### US COVID-19 Deaths
+
+```{r}
+rm(list=ls())
+People <- read.csv("./STATESDAILY.csv")
+People <- subset(People,new_deaths >0)
+People$new_cases <- abs(People$new_cases)
+People$new_deaths <- abs(People$new_deaths)
+class(People$new_case)
+class(People$new_deaths)
+head(People,n=10)
+colnames(People)
+```
+
+#### People Counts: Min,Max and Mean
+
+```{r}
+TotPeople <- format(sum(People$new_deaths), nsmall=2, big.mark=",")
+MinPeople <- format(min(People$new_deaths), nsmall=2, big.mark=",")
+MaxPeople <- format(as.numeric(max(People$new_deaths)),nsmall=2,scientific=FALSE,big.mark=",")
+
+
+summary(People$new_deaths)
+# People<-People[!(People$People2010<0.01),] # Delete records < 0.01
+
+```
+
+#### Multiply records 0.01<=x<10 by 1000 to move decimal point to the right
+
+```{r}
+People$new_deaths <- ifelse(People$new_deaths <10 & People$new_deaths >=0.01,    People$new_deaths*1000,People$new_deaths)
+```
+
+#### Extract and Sum the Digit Frequencies
+
+```{r}
+FT       <- substr(People$new_deaths,1,2)
+FTD      <- as.numeric(FT)
+Count    <- aggregate(data.frame(Count=FTD),list(FirstTwo=FTD),length)
+FTDCount <- data.frame(Count$FirstTwo, Count$Count)
+
+```
+
+####  Rename the FirstTwo and Count fields
+
+```{r}
+colnames(FTDCount)[colnames(FTDCount)=="Count.FirstTwo"]<-"FirstTwo"
+colnames(FTDCount)[colnames(FTDCount)=="Count.Count"]<-"Count"
+```
+
+#### Check: Is there a positive (>0) count for each possible First-Two Digits?
+
+```{r}
+CheckErr1 <- NROW(FTDCount)
+CheckErr2 <- sum(FTDCount$FirstTwo)
+if(CheckErr1!= 90)   warning('Count of First-Two Digits ne 90')
+if(CheckErr2!= 4905) warning('First-Two Digits not = 10:99')
+```
+
+#### Prepare the components of the Benford Table
+
+```{r}
+FTDigit    <- c(10:99)
+Count      <- c(FTDCount$Count)
+TotObs     <- sum(Count)
+Actual     <- round(Count/TotObs, digits=6)
+Benford    <- round(log10(1+1/FTDigit), digits=6)
+Difference <- round(Actual-Benford, digits=6)
+AbsDiff    <- round(abs(Difference), digits=6)
+Zstat      <- round((abs(Actual-Benford)-(1/(2*TotObs)))/(sqrt(Benford*(1-Benford)/TotObs)), digits=6)
+Zstat      <- ifelse(Zstat<0, 0, Zstat)
+```
+
+#### Combine the components of the Benford Table with reasonableness tests
+
+```{r}
+BenTest <- cbind(FTDigit,Count,Actual,Benford,Difference,AbsDiff,Zstat)
+head(BenTest, n=5)
+tail(BenTest, n=5)
+str(BenTest)
+summary(Count)
+
+```
+
+
+
+#### Plots of Benford's Law
+
+```{r}
+benford <- as.data.frame(BenTest)
+attach(benford)
+plot(benford$FTDigit,benford$Count,type="h",main="Benford Counts First Two Digits")
+plot(benford$Actual,type="h",main="Benford Actual   Percents")
+lines(benford$Benford,type="l",col="red",)
+```
+
+####  First Digits
+
+#### Extract and Sum the Digit Frequencies
+
+```{r}
+FT1       <- substr(People$new_deaths,1,1)
+FTD1      <- as.numeric(FT)
+Count1    <- aggregate(data.frame(Count=FTD1),list(FirstTwo=FTD),length)
+FTDCount1 <- data.frame(Count1$FirstTwo, Count1$Count)
+
+```
+
+####  Rename the FirstTwo and Count fields
+
+```{r}
+colnames(FTDCount1)[colnames(FTDCount1)=="Count.FirstTwo"]<-"FirstTwo"
+colnames(FTDCount1)[colnames(FTDCount1)=="Count.Count"]<-"Count"
+```
+
+#### Check: Is there a positive (>0) count for each possible First-Two Digits?
+
+```{r}
+CheckErr1 <- NROW(FTDCount1)
+CheckErr2 <- sum(FTDCount1$FirstTwo)
+if(CheckErr1!= 90)   warning('Count of First-Two Digits ne 90')
+if(CheckErr2!= 4905) warning('First-Two Digits not = 10:99')
+```
+
+#### Prepare the components of the Benford Table
+
+```{r}
+FTDigit    <- c(10:99)
+Count      <- c(FTDCount1$Count)
+TotObs     <- sum(Count)
+Actual     <- round(Count/TotObs, digits=6)
+Benford    <- round(log10(1+1/FTDigit), digits=6)
+Difference <- round(Actual-Benford, digits=6)
+AbsDiff    <- round(abs(Difference), digits=6)
+Zstat      <- round((abs(Actual-Benford)-(1/(2*TotObs)))/(sqrt(Benford*(1-Benford)/TotObs)), digits=6)
+Zstat      <- ifelse(Zstat<0, 0, Zstat)
+```
+
+#### Combine the components of the Benford Table with reasonableness tests
+
+```{r}
+BenTest1 <- cbind(FTDigit,Count,Actual,Benford,Difference,AbsDiff,Zstat)
+head(BenTest, n=5)
+tail(BenTest, n=5)
+str(BenTest)
+summary(Count)
+
+```
+
+####  Calculate the Mean Absolute Deviation (MAD) to assess conformity
+
+```{r}
+MAD <- round(mean(AbsDiff), digits = 5)
+if(MAD>0.0022){
+     con<-"Nonconformity"
+}else if(MAD>0.0018) {
+     con<-"Marginally acceptable conformity"
+}else if(MAD>0.0012) {
+     con<-"Acceptable conformity"
+}else{
+     con<-"Close conformity"
+}
+#
+cat('Our conclusion is:',con,"\n")
+write.csv(BenTest, file="BenTest.csv")    # Write the results to a csv file
+```
+#### Plots of Benford's Law
+
+```{r}
+benford1 <- as.data.frame(BenTest1)
+attach(benford1)
+plot(benford1$FTDigit,benford1$Count,type="h",main="Benford Counts First Two Digits")
+plot(benford1$Actual,type="h",main="Benford Actual   Percents")
+lines(benford1$Benford,type="l",col="red",)

@@ -2,16 +2,19 @@
 title: "Package Bendford Tests"
 author: "David Jackson"
 date: "11/16/2020"
-output: html_document
+output: 
+  html_document: 
+    fig_width: 9
+    fig_height: 7
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(scales)
-library(dplyr)
-library(readr)
 library(BenfordTests)
+library(benford.analysis)
+library(RSQLite)
 ```
 
 ### Set the random seed to an arbitrary number
@@ -25,7 +28,7 @@ set.seed(421)
 ### Create a sample satisfying Benford's law
 
 ```{r}
-X<-rbenf(n=20)
+X<-rbenf(n=50)
 X
 ```
 
@@ -71,26 +74,39 @@ signifd.analysis(YY)
 
 ```
 
-### first Digit Deaths
+### first Digit and Second Deaths
 
 ```{r}
-ZZ<- signifd(Z)
-ZZ <-subset(ZZ,ZZ>=0)
-signifd.analysis(ZZ)
+X <-signifd(X)
+cp <- benford(X, 1, sign="both") #generates benford object
+plot(cp) #plots
 ```
-
-
-#### New York COVID-19 Deaths 
+#### US COVID-19 Deaths (From States Data)
 
 ```{r}
-nyt <- read_csv("../DATA/us-states.csv") %>% filter(state =="New York") %>% select(deaths)
-
- NYTD<- diff(nyt$deaths,lag=1)
-
+db <- db <- dbConnect(RSQLite::SQLite(),dbname= "../COVIDDB/COVID.sqlite3")
+df <- dbGetQuery(db,"select new_cases,new_deaths from COUNTYDAILY ")
+X <- df$new_deaths
+Y <- df$new_cases
 ```
 ```{r}
-NYTD <- signifd(NYTD)
-NYTD <-subset(NYTD,NYTD>=0)
-signifd.analysis(ZZ)
+cp <- benford(X, 1, sign="both") #generates benford object
+plot(cp) #plots
+```
+## First two Digits
+
+```{r}
+cp <- benford(X, 2,sign="both") #generates benford object
+plot(cp) #plots
 ```
 
+```{r}
+cp <- benford(Y, 1, sign="both") #generates benford object
+plot(cp) #plots
+```
+## Cases first two digits 
+
+```{r}
+cp <- benford(Y, 2, sign="both") #generates benford object
+plot(cp) #plots
+```
