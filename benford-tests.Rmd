@@ -85,7 +85,7 @@ plot(cp) #plots
 
 ```{r}
 db <- db <- dbConnect(RSQLite::SQLite(),dbname= "../COVIDDB/COVID.sqlite3")
-df <- dbGetQuery(db,"select new_cases,new_deaths from COUNTYDAILY ")
+df <- dbGetQuery(db,"select state,new_cases,new_deaths from COUNTYDAILY ")
 X <- df$new_deaths
 Y <- df$new_cases
 ```
@@ -104,9 +104,27 @@ plot(cp) #plots
 cp <- benford(Y, 1, sign="both") #generates benford object
 plot(cp) #plots
 ```
+
 ## Cases first two digits 
 
 ```{r}
 cp <- benford(Y, 2, sign="both") #generates benford object
 plot(cp) #plots
 ```
+#### New York State of Mind
+
+```{r}
+NY <- subset(df,state=="New York"  )
+XX <- NY$new_deaths
+YY <- NY$new_cases
+```
+```{r}
+cp <- benford(XX,1 , sign="both") #generates benford object
+plot(cp) #plots
+```
+```{r}
+cp1 <- benford(XX,2 , sign="both") #generates benford object
+plot(cp) #plots
+```
+
+
